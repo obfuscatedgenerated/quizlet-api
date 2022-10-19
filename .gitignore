@@ -1,0 +1,7 @@
+.dccache
+/quizlet.egg-info/
+/build/
+/dist/
+*.pyc
+/env/
+test.py
