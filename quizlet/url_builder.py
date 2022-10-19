@@ -37,6 +37,9 @@ class URLBuilder:
             "page": str(page),
         }
 
+        if paging_token is not None:
+            params["pagingToken"] = paging_token
+
         query.update(params)
         url_fragments[4] = urlencode(query)
 
