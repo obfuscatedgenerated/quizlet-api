@@ -1,4 +1,3 @@
-from logging import warn
 import urllib.parse as urlparse
 from urllib.parse import urlencode
 
@@ -39,6 +38,24 @@ class URLBuilder:
 
         if paging_token is not None:
             params["pagingToken"] = paging_token
+
+        query.update(params)
+        url_fragments[4] = urlencode(query)
+
+        return urlparse.urlunparse(url_fragments)
+
+    @staticmethod
+    def cardset_full(id: int) -> str:
+        assert isinstance(id, int), "id must be an integer"
+
+        url = "https://quizlet.com/webapi/3.4/studiable-item-documents?filters[studiableContainerType]=1"
+        url_fragments = list(urlparse.urlparse(url))
+
+        query = dict(urlparse.parse_qsl(url_fragments[4]))
+
+        params = {
+            "filters[studiableContainerId]": str(id),
+        }
 
         query.update(params)
         url_fragments[4] = urlencode(query)

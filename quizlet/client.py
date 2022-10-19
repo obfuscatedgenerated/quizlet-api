@@ -116,7 +116,11 @@ def generic_get(url: str, raise_error_identifiers=False) -> dict:
 class QuizletAPIClient:
     @staticmethod
     def cardset_page(
-        id: int, per_page: int, page: int, paging_token: Union[str, None] = None, raise_error_identifiers=False
+        id: int,
+        per_page: int,
+        page: int,
+        paging_token: Union[str, None] = None,
+        raise_error_identifiers=False,
     ) -> dict:
         try:
             return generic_get(
@@ -127,7 +131,9 @@ class QuizletAPIClient:
             raise (e)
 
     @staticmethod
-    def cardset_page_range(id: int, per_page: int, page_range: range, raise_error_identifers=False) -> list:
+    def cardset_page_range(
+        id: int, per_page: int, page_range: range, raise_error_identifers=False
+    ) -> list:
         assert isinstance(id, int), "id must be an integer"
         assert isinstance(per_page, int), "per_page must be an integer"
         assert isinstance(page_range, range), "page_range must be a range"
@@ -154,9 +160,23 @@ class QuizletAPIClient:
         token = None
 
         for i in page_range:
-            current = QuizletAPIClient.cardset_page(id, per_page, i, token, raise_error_identifers)
+            current = QuizletAPIClient.cardset_page(
+                id, per_page, i, token, raise_error_identifers
+            )
             results.append(current)
 
             token = current["responses"][0]["paging"]["token"]
 
         return results
+
+    @staticmethod
+    def cardset_full(id: int, raise_error_identifiers=False) -> dict:
+        assert isinstance(id, int), "id must be an integer"
+
+        try:
+            return generic_get(
+                URLBuilder.cardset_full(id),
+                raise_error_identifiers,
+            )
+        except APIException as e:
+            raise (e)
