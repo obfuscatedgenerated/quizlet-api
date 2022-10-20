@@ -7,6 +7,17 @@ from typing import Union
 
 
 class URLBuilder:
+    """Builds a URL for a single page of a Quizlet set.
+
+    Parameters:
+        id (int): The ID of the set to build a URL for.
+        per_page (int): The results per page.
+        page (int): The page number to build a URL for.
+        paging_token (optional str): The paging token to use pages after the first.
+
+    Returns:
+        str: The URL for the page of the set.
+    """
     @staticmethod
     def cardset_page(
         id: int, per_page: int, page: int, paging_token: Union[str, None] = None
@@ -44,6 +55,14 @@ class URLBuilder:
 
         return urlparse.urlunparse(url_fragments)
 
+    """Builds a URL for a full Quizlet set.
+    
+    Parameters:
+        id (int): The ID of the set to build a URL for.
+    
+    Returns:
+        str: The URL for the set.
+    """
     @staticmethod
     def cardset_full(id: int) -> str:
         assert isinstance(id, int), "id must be an integer"
