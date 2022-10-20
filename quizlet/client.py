@@ -7,6 +7,7 @@ from logging import warn
 from typing import Union
 
 import random
+from datetime import datetime
 
 from json.decoder import JSONDecodeError
 
@@ -155,6 +156,33 @@ class Card:
         self.lastModified = lastModified
         self.isDeleted = isDeleted
         self.cardSides = cardSides
+    
+    def __str__(self) -> str:
+        return f"Card(id={self.id}, studiableContainerType={self.studiableContainerType}, studiableContainerId={self.studiableContainerId}, rank={self.rank}, creatorId={self.creatorId}, timestamp={self.timestamp}, lastModified={self.lastModified}, isDeleted={self.isDeleted}, cardSides={self.cardSides})"
+
+    def get_id(self) -> int:
+        return self.id
+    
+    def get_set_id(self) -> int:
+        return self.studiableContainerId
+
+    def get_rank(self) -> int:
+        return self.rank
+    
+    def get_creator_id(self) -> int:
+        return self.creatorId
+    
+    def get_timestamp(self) -> int:
+        return self.timestamp
+    
+    def get_utc_time(self) -> datetime:
+        return datetime.utcfromtimestamp(self.timestamp)
+    
+    def get_last_modified(self) -> int:
+        return self.lastModified
+    
+    def is_deleted(self) -> bool:
+        return self.isDeleted
 
     def get_side(self, side: int) -> str:
         return self.cardSides[side]
@@ -166,6 +194,9 @@ class CardSide:
         self.label = label
         self.media = media
         self.distractors = distractors
+    
+    def __str__(self) -> str:
+        return f"CardSide(sideId={self.sideId}, label={self.label}, media={self.media}, distractors={self.distractors})"
     
     def get_side_id(self) -> int:
         return self.sideId
@@ -191,6 +222,9 @@ class TextMedia:
         self.ttsUrl = ttsUrl
         self.ttsSlowUrl = ttsSlowUrl
         self.richText = richText
+    
+    def __str__(self) -> str:
+        return f"TextMedia(plainText={self.plainText}, languageCode={self.languageCode}, ttsUrl={self.ttsUrl}, ttsSlowUrl={self.ttsSlowUrl}, richText={self.richText})"
     
     def get_plain_text(self) -> str:
         return self.plainText
@@ -245,6 +279,9 @@ class ImageMedia:
         self.url = url
         self.width = width
         self.height = height
+    
+    def __str__(self) -> str:
+        return f"ImageMedia(code={self.code}, url={self.url}, width={self.width}, height={self.height})"
     
     def get_code(self) -> str:
         return self.code
@@ -381,7 +418,9 @@ class QuizletAPIClient:
                     media["type"], int
                 ), f"cardSides[{i}].media[{j}] must contain a type and it must be an integer"
 
-                if type == 1:  # text
+                media_type = media["type"]
+
+                if media_type == 1:  # text
                     assert "plainText" in media and isinstance(
                         media["plainText"], str
                     ), f"cardSides[{i}].media[{j}] must contain plainText and it must be a string"
@@ -407,7 +446,7 @@ class QuizletAPIClient:
                             media["richText"],
                         )
                     )
-                elif type == 2:  # image
+                elif media_type == 2:  # image
                     assert "code" in media and isinstance(
                         media["code"], str
                     ), f"cardSides[{i}].media[{j}] must contain code and it must be a string"
@@ -429,10 +468,10 @@ class QuizletAPIClient:
                             media["height"],
                         )
                     )
-                elif type == 3:  # audio
+                elif media_type == 3:  # audio
                     raise NotImplementedError("Audio media is not yet supported")
                 else:
-                    raise ValueError(f"Unknown media type: {type}")
+                    raise ValueError(f"Unknown media type: {media_type}")
 
             effective_card_sides.append(
                 CardSide(
@@ -456,3 +495,16 @@ class QuizletAPIClient:
             isDeleted=card_data["isDeleted"],
             cardSides=sorted(effective_card_sides, key=lambda x: x.sideId),
         )
+    
+    @staticmethod
+    def get_parsed_cardset(id: int, raise_error_identifiers=False):
+        res = QuizletAPIClient.cardset_full(id, raise_error_identifiers)
+        cards = res["responses"][0]["models"]["studiableItem"]
+
+        parsed = []
+
+        for i, card in enumerate(cards):
+            parsed.append(QuizletAPIClient.parse_card(card))
+        
+        return sorted(parsed, key=lambda x: x.get_rank())
+
