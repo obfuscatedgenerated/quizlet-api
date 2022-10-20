@@ -1,5 +1,5 @@
 .dccache
-/quizlet.egg-info/
+/quizlet_api.egg-info/
 /build/
 /dist/
 *.pyc
