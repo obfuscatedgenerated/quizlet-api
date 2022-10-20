@@ -21,7 +21,7 @@ class APIException(Exception):
     pass
 
 
-USER_AGENTS = [ # a list of real user agents to allow the API to work. thanks to DavidWittman/requests-random-user-agent
+USER_AGENTS = [  # a list of real user agents to allow the API to work. thanks to DavidWittman/requests-random-user-agent
     "Mozilla/5.0 (Linux; U; Android 8.0.0; zh-cn; Mi Note 2 Build/OPR1.170623.032) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/61.0.3163.128 Mobile Safari/537.36 XiaoMi/MiuiBrowser/10.1.1",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0) Gecko/20100101 Firefox/102.0",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:103.0) Gecko/20100101 Firefox/103.0",
@@ -95,6 +95,8 @@ USER_AGENTS = [ # a list of real user agents to allow the API to work. thanks to
 Returns:
     str: A random user agent
 """
+
+
 def random_user_agent() -> str:
     return random.choice(USER_AGENTS)
 
@@ -103,15 +105,23 @@ def random_user_agent() -> str:
 
 Parameters:
     url (str): The url to get
+    qlts_token (optional str): The qlts token extracted from the Quizlet cookie. Used to access private sets.
     raise_error_identifiers (optional bool): raise the computer readable error identifier instead of the human readable error message. Defaults to False.
 
 Returns:
     dict: The response
 """
-def generic_get(url: str, raise_error_identifiers=False) -> dict:
+
+
+def generic_get(
+    url: str, qlts_token: Union[str, None], raise_error_identifiers=False
+) -> dict:
     assert isinstance(url, str), "url must be a string"
 
     headers = {"User-Agent": random_user_agent()}
+
+    if qlts_token:
+        headers["Cookie"] = f"qlts={qlts_token}"
 
     res = requests.get(url, headers=headers)
 
@@ -156,31 +166,31 @@ class Card:
         self.lastModified = lastModified
         self.isDeleted = isDeleted
         self.cardSides = cardSides
-    
+
     def __str__(self) -> str:
         return f"Card(id={self.id}, studiableContainerType={self.studiableContainerType}, studiableContainerId={self.studiableContainerId}, rank={self.rank}, creatorId={self.creatorId}, timestamp={self.timestamp}, lastModified={self.lastModified}, isDeleted={self.isDeleted}, cardSides={self.cardSides})"
 
     def get_id(self) -> int:
         return self.id
-    
+
     def get_set_id(self) -> int:
         return self.studiableContainerId
 
     def get_rank(self) -> int:
         return self.rank
-    
+
     def get_creator_id(self) -> int:
         return self.creatorId
-    
+
     def get_timestamp(self) -> int:
         return self.timestamp
-    
+
     def get_utc_time(self) -> datetime:
         return datetime.utcfromtimestamp(self.timestamp)
-    
+
     def get_last_modified(self) -> int:
         return self.lastModified
-    
+
     def is_deleted(self) -> bool:
         return self.isDeleted
 
@@ -194,16 +204,16 @@ class CardSide:
         self.label = label
         self.media = media
         self.distractors = distractors
-    
+
     def __str__(self) -> str:
         return f"CardSide(sideId={self.sideId}, label={self.label}, media={self.media}, distractors={self.distractors})"
-    
+
     def get_side_id(self) -> int:
         return self.sideId
-    
+
     def get_label(self) -> str:
         return self.label
-    
+
     def get_media(self) -> list:
         return self.media
 
@@ -222,22 +232,22 @@ class TextMedia:
         self.ttsUrl = ttsUrl
         self.ttsSlowUrl = ttsSlowUrl
         self.richText = richText
-    
+
     def __str__(self) -> str:
         return f"TextMedia(plainText={self.plainText}, languageCode={self.languageCode}, ttsUrl={self.ttsUrl}, ttsSlowUrl={self.ttsSlowUrl}, richText={self.richText})"
-    
+
     def get_plain_text(self) -> str:
         return self.plainText
-    
+
     def get_language_code(self) -> str:
         return self.languageCode
-    
+
     def get_tts_url(self, absolute=False, slow=False) -> str:
         url = self.ttsUrl
 
         if slow:
             url = self.ttsSlowUrl
-        
+
         if absolute:
             if not url.startswith("/"):
                 raise APIException("TTS URL is not relative, unsafe to make absolute")
@@ -245,7 +255,7 @@ class TextMedia:
             return urlparse.urljoin("https://quizlet.com", url)
 
         return url
-    
+
     def get_tts_url_at_speed(self, speed: int, absolute=False) -> str:
         url = self.ttsUrl
         url_fragments = list(urlparse.urlparse(url))
@@ -260,15 +270,15 @@ class TextMedia:
         url_fragments[4] = urlencode(query)
 
         url = urlparse.urlunparse(url_fragments)
-        
+
         if absolute:
             if not url.startswith("/"):
-               raise APIException("TTS URL is not relative, unsafe to make absolute")
-                
+                raise APIException("TTS URL is not relative, unsafe to make absolute")
+
             return urlparse.urljoin("https://quizlet.com", url)
 
         return url
-    
+
     def get_rich_text(self) -> Union[str, None]:
         return self.richText
 
@@ -279,26 +289,35 @@ class ImageMedia:
         self.url = url
         self.width = width
         self.height = height
-    
+
     def __str__(self) -> str:
         return f"ImageMedia(code={self.code}, url={self.url}, width={self.width}, height={self.height})"
-    
+
     def get_code(self) -> str:
         return self.code
-    
+
     def get_url(self) -> str:
         return self.url
-    
+
     def get_width(self) -> int:
         return self.width
-    
+
     def get_height(self) -> int:
         return self.height
 
 
 class QuizletAPIClient:
-    @staticmethod
+    def __init__(self, qlts_token=None):
+        assert not qlts_token or isinstance(qlts_token, str), "qlts_token must be a string if provided"
+
+        self.qlts_token = qlts_token
+    
+    def set_qlts_token(self, qlts_token):
+        assert isinstance(qlts_token, str), "qlts_token must be a string"
+        self.qlts_token = qlts_token
+
     def cardset_page(
+        self,
         id: int,
         per_page: int,
         page: int,
@@ -308,14 +327,14 @@ class QuizletAPIClient:
         try:
             return generic_get(
                 URLBuilder.cardset_page(id, per_page, page, paging_token),
-                raise_error_identifiers,
+                qlts_token=self.qlts_token,
+                raise_error_identifiers=raise_error_identifiers,
             )
         except APIException as e:
             raise (e)
 
-    @staticmethod
     def cardset_page_range(
-        id: int, per_page: int, page_range: range, raise_error_identifers=False
+        self, id: int, per_page: int, page_range: range, raise_error_identifers=False
     ) -> list:
         assert isinstance(id, int), "id must be an integer"
         assert isinstance(per_page, int), "per_page must be an integer"
@@ -340,33 +359,41 @@ class QuizletAPIClient:
             raise ValueError("Page range values must be integers")
 
         results = []
-        token = None
+        paging_token = None
 
         for i in page_range:
-            current = QuizletAPIClient.cardset_page(
-                id, per_page, i, token, raise_error_identifers
+            current = self.cardset_page(
+                id, per_page, i, paging_token, raise_error_identifers
             )
             results.append(current)
 
-            token = current["responses"][0]["paging"]["token"]
+            paging_token = current["responses"][0]["paging"]["token"]
 
         return results
 
-    @staticmethod
-    def cardset_full(id: int, raise_error_identifiers=False) -> dict:
+    def cardset_full(self, id: int, raise_error_identifiers=False) -> dict:
         assert isinstance(id, int), "id must be an integer"
 
         try:
             return generic_get(
                 URLBuilder.cardset_full(id),
-                raise_error_identifiers,
+                qlts_token=self.qlts_token,
+                raise_error_identifiers=raise_error_identifiers,
             )
         except APIException as e:
             raise (e)
 
     @staticmethod
-    def parse_card(card_data: dict) -> Card:
+    def parse_card(card_data: dict) -> Union[Card, None]:
         assert isinstance(card_data, dict), "card_data must be a dictionary"
+
+        assert "isDeleted" in card_data and isinstance(
+            card_data["isDeleted"], bool
+        ), "card_data must contain a isDeleted and it must be a boolean"
+
+        if card_data["isDeleted"]:
+            warn("Card is deleted, skipping (could be a private set)")
+            return None
 
         assert "id" in card_data and isinstance(
             card_data["id"], int
@@ -388,9 +415,6 @@ class QuizletAPIClient:
         assert "lastModified" in card_data and isinstance(
             card_data["lastModified"], int
         ), "card_data must contain a lastModified and it must be an integer"
-        assert "isDeleted" in card_data and isinstance(
-            card_data["isDeleted"], bool
-        ), "card_data must contain a isDeleted and it must be a boolean"
         assert "cardSides" in card_data and isinstance(
             card_data["cardSides"], list
         ), "card_data must contain a cardSides and it must be a list"
@@ -495,16 +519,16 @@ class QuizletAPIClient:
             isDeleted=card_data["isDeleted"],
             cardSides=sorted(effective_card_sides, key=lambda x: x.sideId),
         )
-    
-    @staticmethod
-    def get_parsed_cardset(id: int, raise_error_identifiers=False):
-        res = QuizletAPIClient.cardset_full(id, raise_error_identifiers)
+
+    def get_parsed_cardset(self, id: int, raise_error_identifiers=False):
+        res = self.cardset_full(id, raise_error_identifiers)
         cards = res["responses"][0]["models"]["studiableItem"]
 
         parsed = []
 
         for i, card in enumerate(cards):
-            parsed.append(QuizletAPIClient.parse_card(card))
-        
-        return sorted(parsed, key=lambda x: x.get_rank())
+            parse_res = QuizletAPIClient.parse_card(card)
+            if parse_res:
+                parsed.append(parse_res)
 
+        return sorted(parsed, key=lambda x: x.get_rank())
