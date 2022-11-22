@@ -114,7 +114,7 @@ def generic_get(
     url: str, qlts_token: Union[str, None], raise_error_identifiers=False
 ) -> dict:
     if not isinstance(url, str):
-        raise AssertionError("url must be a string")
+        raise TypeError("url must be a string")
 
     headers = {"User-Agent": random_user_agent()}
 
@@ -307,13 +307,13 @@ class ImageMedia:
 class QuizletAPIClient:
     def __init__(self, qlts_token=None):
         if not (not qlts_token or isinstance(qlts_token, str)):
-            raise AssertionError("qlts_token must be a string if provided")
+            raise TypeError("qlts_token must be a string if provided")
 
         self.qlts_token = qlts_token
 
     def set_qlts_token(self, qlts_token):
         if not isinstance(qlts_token, str):
-            raise AssertionError("qlts_token must be a string")
+            raise TypeError("qlts_token must be a string")
         self.qlts_token = qlts_token
 
     def cardset_page(
@@ -337,11 +337,11 @@ class QuizletAPIClient:
         self, id: int, per_page: int, page_range: range, raise_error_identifers=False
     ) -> list:
         if not isinstance(id, int):
-            raise AssertionError("id must be an integer")
+            raise TypeError("id must be an integer")
         if not isinstance(per_page, int):
-            raise AssertionError("per_page must be an integer")
+            raise TypeError("per_page must be an integer")
         if not isinstance(page_range, range):
-            raise AssertionError("page_range must be a range")
+            raise TypeError("page_range must be a range")
 
         if page_range.start < 1:
             raise ValueError("Page range must start at 1 or greater")
@@ -376,7 +376,7 @@ class QuizletAPIClient:
 
     def cardset_full(self, id: int, raise_error_identifiers=False) -> dict:
         if not isinstance(id, int):
-            raise AssertionError("id must be an integer")
+            raise TypeError("id must be an integer")
 
         try:
             return generic_get(
@@ -390,10 +390,10 @@ class QuizletAPIClient:
     @staticmethod
     def parse_card(card_data: dict) -> Union[Card, None]:
         if not isinstance(card_data, dict):
-            raise AssertionError("card_data must be a dictionary")
+            raise TypeError("card_data must be a dictionary")
 
         if not ("isDeleted" in card_data and isinstance(card_data["isDeleted"], bool)):
-            raise AssertionError(
+            raise TypeError(
                 "card_data must contain a isDeleted and it must be a boolean"
             )
 
@@ -401,8 +401,9 @@ class QuizletAPIClient:
             warn("Card is deleted, skipping (could be a private set)")
             return None
 
+        # messy!
         if not ("id" in card_data and isinstance(card_data["id"], int)):
-            raise AssertionError(
+            raise TypeError(
                 "card_data must contain an id and it must be an integer"
             )
         if not "studiableContainerType" in card_data:
@@ -411,29 +412,29 @@ class QuizletAPIClient:
             "studiableContainerId" in card_data
             and isinstance(card_data["studiableContainerId"], int)
         ):
-            raise AssertionError(
+            raise TypeError(
                 "card_data must contain a studiableContainerId and it must be an integer"
             )
         if not ("rank" in card_data and isinstance(card_data["rank"], int)):
-            raise AssertionError(
+            raise TypeError(
                 "card_data must contain a rank and it must be an integer"
             )
         if not ("creatorId" in card_data and isinstance(card_data["creatorId"], int)):
-            raise AssertionError(
+            raise TypeError(
                 "card_data must contain a creatorId and it must be an integer"
             )
         if not ("timestamp" in card_data and isinstance(card_data["timestamp"], int)):
-            raise AssertionError(
+            raise TypeError(
                 "card_data must contain a timestamp and it must be an integer"
             )
         if not (
             "lastModified" in card_data and isinstance(card_data["lastModified"], int)
         ):
-            raise AssertionError(
+            raise TypeError(
                 "card_data must contain a lastModified and it must be an integer"
             )
         if not ("cardSides" in card_data and isinstance(card_data["cardSides"], list)):
-            raise AssertionError(
+            raise TypeError(
                 "card_data must contain a cardSides and it must be a list"
             )
 
@@ -441,19 +442,19 @@ class QuizletAPIClient:
 
         for i, side in enumerate(card_data["cardSides"]):
             if not ("sideId" in side and isinstance(side["sideId"], int)):
-                raise AssertionError(
+                raise TypeError(
                     f"cardSides[{i}] must contain a sideId and it must be an integer"
                 )
             if not ("label" in side and isinstance(side["label"], str)):
-                raise AssertionError(
+                raise TypeError(
                     f"cardSides[{i}] must contain a label and it must be a string"
                 )
             if not ("media" in side and isinstance(side["media"], list)):
-                raise AssertionError(
+                raise TypeError(
                     f"cardSides[{i}] must contain a media and it must be a list"
                 )
             if not ("distractors" in side and isinstance(side["distractors"], list)):
-                raise AssertionError(
+                raise TypeError(
                     f"cardSides[{i}] must contain a distractors and it must be a list"
                 )
 
@@ -461,7 +462,7 @@ class QuizletAPIClient:
 
             for j, media in enumerate(side["media"]):
                 if not ("type" in media and isinstance(media["type"], int)):
-                    raise AssertionError(
+                    raise TypeError(
                         f"cardSides[{i}].media[{j}] must contain a type and it must be an integer"
                     )
 
@@ -471,24 +472,24 @@ class QuizletAPIClient:
                     if not (
                         "plainText" in media and isinstance(media["plainText"], str)
                     ):
-                        raise AssertionError(
+                        raise TypeError(
                             f"cardSides[{i}].media[{j}] must contain plainText and it must be a string"
                         )
                     if not (
                         "languageCode" in media
                         and isinstance(media["languageCode"], str)
                     ):
-                        raise AssertionError(
+                        raise TypeError(
                             f"cardSides[{i}].media[{j}] must contain languageCode and it must be a string"
                         )
                     if not ("ttsUrl" in media and isinstance(media["ttsUrl"], str)):
-                        raise AssertionError(
+                        raise TypeError(
                             f"cardSides[{i}].media[{j}] must contain ttsUrl and it must be a string"
                         )
                     if not (
                         "ttsSlowUrl" in media and isinstance(media["ttsSlowUrl"], str)
                     ):
-                        raise AssertionError(
+                        raise TypeError(
                             f"cardSides[{i}].media[{j}] must contain ttsSlowUrl and it must be a string"
                         )
                     if not (
@@ -498,7 +499,7 @@ class QuizletAPIClient:
                             or isinstance(media["richText"], str)
                         )
                     ):
-                        raise AssertionError(
+                        raise TypeError(
                             f"cardSides[{i}].media[{j}] must contain richText and it must be a string or None (null)"
                         )
 
@@ -513,19 +514,19 @@ class QuizletAPIClient:
                     )
                 elif media_type == 2:  # image
                     if not ("code" in media and isinstance(media["code"], str)):
-                        raise AssertionError(
+                        raise TypeError(
                             f"cardSides[{i}].media[{j}] must contain code and it must be a string"
                         )
                     if not ("url" in media and isinstance(media["url"], str)):
-                        raise AssertionError(
+                        raise TypeError(
                             f"cardSides[{i}].media[{j}] must contain url and it must be a string"
                         )
                     if not ("width" in media and isinstance(media["width"], int)):
-                        raise AssertionError(
+                        raise TypeError(
                             f"cardSides[{i}].media[{j}] must contain width and it must be an integer"
                         )
                     if not ("height" in media and isinstance(media["height"], int)):
-                        raise AssertionError(
+                        raise TypeError(
                             f"cardSides[{i}].media[{j}] must contain height and it must be an integer"
                         )
 

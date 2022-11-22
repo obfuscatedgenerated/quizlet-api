@@ -22,15 +22,15 @@ class URLBuilder:
         id: int, per_page: int, page: int, paging_token: Union[str, None] = None
     ) -> str:
         if not isinstance(id, int):
-            raise AssertionError("id must be an integer")
+            raise TypeError("id must be an integer")
         if not isinstance(per_page, int):
-            raise AssertionError("per_page must be an integer")
+            raise TypeError("per_page must be an integer")
         if not isinstance(page, int):
-            raise AssertionError("page must be an integer")
+            raise TypeError("page must be an integer")
 
         if paging_token is not None:
             if not isinstance(paging_token, str):
-                raise AssertionError("paging_token must be a string if provided")
+                raise TypeError("paging_token must be a string if provided")
 
         if page > 1 and paging_token is None:
             warn(
@@ -68,7 +68,7 @@ class URLBuilder:
     @staticmethod
     def cardset_full(id: int) -> str:
         if not isinstance(id, int):
-            raise AssertionError("id must be an integer")
+            raise TypeError("id must be an integer")
 
         url = "https://quizlet.com/webapi/3.4/studiable-item-documents?filters[studiableContainerType]=1"
         url_fragments = list(urlparse.urlparse(url))
