@@ -3,15 +3,12 @@ try:
 except ImportError:
     from quizlet.url_builder import URLBuilder
 
+import random
+import urllib.parse as urlparse
+from datetime import datetime
+from json.decoder import JSONDecodeError
 from logging import warn
 from typing import Union
-
-import random
-from datetime import datetime
-
-from json.decoder import JSONDecodeError
-
-import urllib.parse as urlparse
 from urllib.parse import urlencode
 
 import requests
@@ -313,7 +310,7 @@ class QuizletAPIClient:
             raise AssertionError("qlts_token must be a string if provided")
 
         self.qlts_token = qlts_token
-    
+
     def set_qlts_token(self, qlts_token):
         if not isinstance(qlts_token, str):
             raise AssertionError("qlts_token must be a string")
@@ -395,97 +392,115 @@ class QuizletAPIClient:
         if not isinstance(card_data, dict):
             raise AssertionError("card_data must be a dictionary")
 
-        if not ("isDeleted" in card_data and isinstance(
-            card_data["isDeleted"], bool
-        )):
-            raise AssertionError("card_data must contain a isDeleted and it must be a boolean")
+        if not ("isDeleted" in card_data and isinstance(card_data["isDeleted"], bool)):
+            raise AssertionError(
+                "card_data must contain a isDeleted and it must be a boolean"
+            )
 
         if card_data["isDeleted"]:
             warn("Card is deleted, skipping (could be a private set)")
             return None
 
-        if not ("id" in card_data and isinstance(
-            card_data["id"], int
-        )):
-            raise AssertionError("card_data must contain an id and it must be an integer")
+        if not ("id" in card_data and isinstance(card_data["id"], int)):
+            raise AssertionError(
+                "card_data must contain an id and it must be an integer"
+            )
         if not "studiableContainerType" in card_data:
             warn("card_data does not contain a studiableContainerType")
-        if not ("studiableContainerId" in card_data and isinstance(
-            card_data["studiableContainerId"], int
-        )):
-            raise AssertionError("card_data must contain a studiableContainerId and it must be an integer")
-        if not ("rank" in card_data and isinstance(
-            card_data["rank"], int
-        )):
-            raise AssertionError("card_data must contain a rank and it must be an integer")
-        if not ("creatorId" in card_data and isinstance(
-            card_data["creatorId"], int
-        )):
-            raise AssertionError("card_data must contain a creatorId and it must be an integer")
-        if not ("timestamp" in card_data and isinstance(
-            card_data["timestamp"], int
-        )):
-            raise AssertionError("card_data must contain a timestamp and it must be an integer")
-        if not ("lastModified" in card_data and isinstance(
-            card_data["lastModified"], int
-        )):
-            raise AssertionError("card_data must contain a lastModified and it must be an integer")
-        if not ("cardSides" in card_data and isinstance(
-            card_data["cardSides"], list
-        )):
-            raise AssertionError("card_data must contain a cardSides and it must be a list")
+        if not (
+            "studiableContainerId" in card_data
+            and isinstance(card_data["studiableContainerId"], int)
+        ):
+            raise AssertionError(
+                "card_data must contain a studiableContainerId and it must be an integer"
+            )
+        if not ("rank" in card_data and isinstance(card_data["rank"], int)):
+            raise AssertionError(
+                "card_data must contain a rank and it must be an integer"
+            )
+        if not ("creatorId" in card_data and isinstance(card_data["creatorId"], int)):
+            raise AssertionError(
+                "card_data must contain a creatorId and it must be an integer"
+            )
+        if not ("timestamp" in card_data and isinstance(card_data["timestamp"], int)):
+            raise AssertionError(
+                "card_data must contain a timestamp and it must be an integer"
+            )
+        if not (
+            "lastModified" in card_data and isinstance(card_data["lastModified"], int)
+        ):
+            raise AssertionError(
+                "card_data must contain a lastModified and it must be an integer"
+            )
+        if not ("cardSides" in card_data and isinstance(card_data["cardSides"], list)):
+            raise AssertionError(
+                "card_data must contain a cardSides and it must be a list"
+            )
 
         effective_card_sides = []
 
         for i, side in enumerate(card_data["cardSides"]):
-            if not ("sideId" in side and isinstance(
-                side["sideId"], int
-            )):
-                raise AssertionError(f"cardSides[{i}] must contain a sideId and it must be an integer")
-            if not ("label" in side and isinstance(
-                side["label"], str
-            )):
-                raise AssertionError(f"cardSides[{i}] must contain a label and it must be a string")
-            if not ("media" in side and isinstance(
-                side["media"], list
-            )):
-                raise AssertionError(f"cardSides[{i}] must contain a media and it must be a list")
-            if not ("distractors" in side and isinstance(
-                side["distractors"], list
-            )):
-                raise AssertionError(f"cardSides[{i}] must contain a distractors and it must be a list")
+            if not ("sideId" in side and isinstance(side["sideId"], int)):
+                raise AssertionError(
+                    f"cardSides[{i}] must contain a sideId and it must be an integer"
+                )
+            if not ("label" in side and isinstance(side["label"], str)):
+                raise AssertionError(
+                    f"cardSides[{i}] must contain a label and it must be a string"
+                )
+            if not ("media" in side and isinstance(side["media"], list)):
+                raise AssertionError(
+                    f"cardSides[{i}] must contain a media and it must be a list"
+                )
+            if not ("distractors" in side and isinstance(side["distractors"], list)):
+                raise AssertionError(
+                    f"cardSides[{i}] must contain a distractors and it must be a list"
+                )
 
             effective_media = []
 
             for j, media in enumerate(side["media"]):
-                if not ("type" in media and isinstance(
-                    media["type"], int
-                )):
-                    raise AssertionError(f"cardSides[{i}].media[{j}] must contain a type and it must be an integer")
+                if not ("type" in media and isinstance(media["type"], int)):
+                    raise AssertionError(
+                        f"cardSides[{i}].media[{j}] must contain a type and it must be an integer"
+                    )
 
                 media_type = media["type"]
 
                 if media_type == 1:  # text
-                    if not ("plainText" in media and isinstance(
-                        media["plainText"], str
-                    )):
-                        raise AssertionError(f"cardSides[{i}].media[{j}] must contain plainText and it must be a string")
-                    if not ("languageCode" in media and isinstance(
-                        media["languageCode"], str
-                    )):
-                        raise AssertionError(f"cardSides[{i}].media[{j}] must contain languageCode and it must be a string")
-                    if not ("ttsUrl" in media and isinstance(
-                        media["ttsUrl"], str
-                    )):
-                        raise AssertionError(f"cardSides[{i}].media[{j}] must contain ttsUrl and it must be a string")
-                    if not ("ttsSlowUrl" in media and isinstance(
-                        media["ttsSlowUrl"], str
-                    )):
-                        raise AssertionError(f"cardSides[{i}].media[{j}] must contain ttsSlowUrl and it must be a string")
-                    if not ("richText" in media and (
-                        media["richText"] is None or isinstance(media["richText"], str)
-                    )):
-                        raise AssertionError(f"cardSides[{i}].media[{j}] must contain richText and it must be a string or None (null)")
+                    if not (
+                        "plainText" in media and isinstance(media["plainText"], str)
+                    ):
+                        raise AssertionError(
+                            f"cardSides[{i}].media[{j}] must contain plainText and it must be a string"
+                        )
+                    if not (
+                        "languageCode" in media
+                        and isinstance(media["languageCode"], str)
+                    ):
+                        raise AssertionError(
+                            f"cardSides[{i}].media[{j}] must contain languageCode and it must be a string"
+                        )
+                    if not ("ttsUrl" in media and isinstance(media["ttsUrl"], str)):
+                        raise AssertionError(
+                            f"cardSides[{i}].media[{j}] must contain ttsUrl and it must be a string"
+                        )
+                    if not (
+                        "ttsSlowUrl" in media and isinstance(media["ttsSlowUrl"], str)
+                    ):
+                        raise AssertionError(
+                            f"cardSides[{i}].media[{j}] must contain ttsSlowUrl and it must be a string"
+                        )
+                    if not (
+                        "richText" in media
+                        and (
+                            media["richText"] is None
+                            or isinstance(media["richText"], str)
+                        )
+                    ):
+                        raise AssertionError(
+                            f"cardSides[{i}].media[{j}] must contain richText and it must be a string or None (null)"
+                        )
 
                     effective_media.append(
                         TextMedia(
@@ -497,22 +512,22 @@ class QuizletAPIClient:
                         )
                     )
                 elif media_type == 2:  # image
-                    if not ("code" in media and isinstance(
-                        media["code"], str
-                    )):
-                        raise AssertionError(f"cardSides[{i}].media[{j}] must contain code and it must be a string")
-                    if not ("url" in media and isinstance(
-                        media["url"], str
-                    )):
-                        raise AssertionError(f"cardSides[{i}].media[{j}] must contain url and it must be a string")
-                    if not ("width" in media and isinstance(
-                        media["width"], int
-                    )):
-                        raise AssertionError(f"cardSides[{i}].media[{j}] must contain width and it must be an integer")
-                    if not ("height" in media and isinstance(
-                        media["height"], int
-                    )):
-                        raise AssertionError(f"cardSides[{i}].media[{j}] must contain height and it must be an integer")
+                    if not ("code" in media and isinstance(media["code"], str)):
+                        raise AssertionError(
+                            f"cardSides[{i}].media[{j}] must contain code and it must be a string"
+                        )
+                    if not ("url" in media and isinstance(media["url"], str)):
+                        raise AssertionError(
+                            f"cardSides[{i}].media[{j}] must contain url and it must be a string"
+                        )
+                    if not ("width" in media and isinstance(media["width"], int)):
+                        raise AssertionError(
+                            f"cardSides[{i}].media[{j}] must contain width and it must be an integer"
+                        )
+                    if not ("height" in media and isinstance(media["height"], int)):
+                        raise AssertionError(
+                            f"cardSides[{i}].media[{j}] must contain height and it must be an integer"
+                        )
 
                     effective_media.append(
                         ImageMedia(

@@ -1,9 +1,7 @@
 import urllib.parse as urlparse
-from urllib.parse import urlencode
-
 from logging import warn
-
 from typing import Union
+from urllib.parse import urlencode
 
 
 class URLBuilder:
@@ -18,6 +16,7 @@ class URLBuilder:
     Returns:
         str: The URL for the page of the set.
     """
+
     @staticmethod
     def cardset_page(
         id: int, per_page: int, page: int, paging_token: Union[str, None] = None
@@ -30,9 +29,7 @@ class URLBuilder:
             raise AssertionError("page must be an integer")
 
         if paging_token is not None:
-            if not isinstance(
-                paging_token, str
-            ):
+            if not isinstance(paging_token, str):
                 raise AssertionError("paging_token must be a string if provided")
 
         if page > 1 and paging_token is None:
@@ -67,6 +64,7 @@ class URLBuilder:
     Returns:
         str: The URL for the set.
     """
+
     @staticmethod
     def cardset_full(id: int) -> str:
         if not isinstance(id, int):
