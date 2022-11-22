@@ -1,12 +1,15 @@
 import os
-from setuptools import setup
 import runpy
+
+from setuptools import setup
+
 
 def read(fname):
     f = open(os.path.join(os.path.dirname(__file__), fname))
     r = f.read()
     f.close()
     return r
+
 
 setup(
     name="quizlet-api",
