@@ -57,10 +57,10 @@ class URLBuilder:
         return urlparse.urlunparse(url_fragments)
 
     """Builds a URL for a full Quizlet set.
-    
+
     Parameters:
         id (int): The ID of the set to build a URL for.
-    
+
     Returns:
         str: The URL for the set.
     """
