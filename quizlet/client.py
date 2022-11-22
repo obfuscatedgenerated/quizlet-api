@@ -3,15 +3,12 @@ try:
 except ImportError:
     from quizlet.url_builder import URLBuilder
 
+import random
+import urllib.parse as urlparse
+from datetime import datetime
+from json.decoder import JSONDecodeError
 from logging import warn
 from typing import Union
-
-import random
-from datetime import datetime
-
-from json.decoder import JSONDecodeError
-
-import urllib.parse as urlparse
 from urllib.parse import urlencode
 
 import requests
@@ -138,9 +135,7 @@ def generic_get(
         else:
             raise APIException(json_res["error"]["message"])
     except KeyError:
-        raise APIException(
-            "Request failed with status code " + str(res.status_code)
-        )
+        raise APIException("Request failed with status code " + str(res.status_code))
 
 
 class Card:
@@ -307,10 +302,12 @@ class ImageMedia:
 
 class QuizletAPIClient:
     def __init__(self, qlts_token=None):
-        assert not qlts_token or isinstance(qlts_token, str), "qlts_token must be a string if provided"
+        assert not qlts_token or isinstance(
+            qlts_token, str
+        ), "qlts_token must be a string if provided"
 
         self.qlts_token = qlts_token
-    
+
     def set_qlts_token(self, qlts_token):
         assert isinstance(qlts_token, str), "qlts_token must be a string"
         self.qlts_token = qlts_token
