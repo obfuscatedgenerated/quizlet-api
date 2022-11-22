@@ -403,9 +403,7 @@ class QuizletAPIClient:
 
         # messy!
         if not ("id" in card_data and isinstance(card_data["id"], int)):
-            raise TypeError(
-                "card_data must contain an id and it must be an integer"
-            )
+            raise TypeError("card_data must contain an id and it must be an integer")
         if not "studiableContainerType" in card_data:
             warn("card_data does not contain a studiableContainerType")
         if not (
@@ -416,9 +414,7 @@ class QuizletAPIClient:
                 "card_data must contain a studiableContainerId and it must be an integer"
             )
         if not ("rank" in card_data and isinstance(card_data["rank"], int)):
-            raise TypeError(
-                "card_data must contain a rank and it must be an integer"
-            )
+            raise TypeError("card_data must contain a rank and it must be an integer")
         if not ("creatorId" in card_data and isinstance(card_data["creatorId"], int)):
             raise TypeError(
                 "card_data must contain a creatorId and it must be an integer"
@@ -434,9 +430,7 @@ class QuizletAPIClient:
                 "card_data must contain a lastModified and it must be an integer"
             )
         if not ("cardSides" in card_data and isinstance(card_data["cardSides"], list)):
-            raise TypeError(
-                "card_data must contain a cardSides and it must be a list"
-            )
+            raise TypeError("card_data must contain a cardSides and it must be a list")
 
         effective_card_sides = []
 
