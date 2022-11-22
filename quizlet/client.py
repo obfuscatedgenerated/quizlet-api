@@ -136,9 +136,7 @@ def generic_get(
         else:
             raise APIException(json_res["error"]["message"])
     except KeyError:
-        raise APIException(
-            "Request failed with status code " + str(res.status_code)
-        )
+        raise APIException("Request failed with status code " + str(res.status_code))
 
 
 class Card:
