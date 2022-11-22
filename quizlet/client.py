@@ -134,8 +134,7 @@ def generic_get(
         try:
             if raise_error_identifiers:
                 raise APIException(json_res["error"]["identifier"])
-            else:
-                raise APIException(json_res["error"]["message"])
+            raise APIException(json_res["error"]["message"])
         except KeyError:
             raise APIException(
                 "Request failed with status code " + str(res.status_code)
