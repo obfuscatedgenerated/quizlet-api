@@ -28,10 +28,7 @@ class URLBuilder:
         if not isinstance(page, int):
             raise TypeError("page must be an integer")
 
-        if (
-            paging_token is not None
-            and not isinstance(paging_token, str)
-        ):
+        if paging_token is not None and not isinstance(paging_token, str):
             raise TypeError("paging_token must be a string if provided")
 
         if page > 1 and paging_token is None:
